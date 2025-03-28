@@ -4,66 +4,88 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
-import java.io.*;
 import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
-public class Controlled extends JPanel {
-    private BufferedImage objectImage;
-    private int objX = 100, objY = 100;
-    private final int objSize = 50;
-    private final int step = 50;
+public class Controlled extends JPanel implements KeyListener, ActionListener {
+    private BufferedImage image;
+    private int x = 100, y = 100;
+    private final int step = 5;
+    private final int objectSize = 50;
+
+    private final Set<Integer> keysPressed = new HashSet<>();
+    private final Timer timer;
 
     public Controlled() {
         setPreferredSize(new Dimension(800, 600));
         setBackground(Color.WHITE);
         setFocusable(true);
-        requestFocusInWindow();
+        addKeyListener(this);
 
         try {
-            BufferedImage original = ImageIO.read(new File("src/gui3_2_6/car4.png"));
-            objectImage = new BufferedImage(objSize, objSize, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2d = objectImage.createGraphics();
-            g2d.drawImage(original, 0, 0, objSize, objSize, null);
-            g2d.dispose();
+            image = ImageIO.read(new File("src/gui3_2_6/car4.png"));
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Не удалось загрузить изображение.");
         }
-        
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                int panelWidth = getWidth();
-                int panelHeight = getHeight();
 
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_LEFT:
-                        if (objX - step >= 0) objX -= step;
-                        break;
-                    case KeyEvent.VK_RIGHT:
-                        if (objX + step + objSize <= panelWidth) objX += step;
-                        break;
-                    case KeyEvent.VK_UP:
-                        if (objY - step >= 0) objY -= step;
-                        break;
-                    case KeyEvent.VK_DOWN:
-                        if (objY + step + objSize <= panelHeight) objY += step;
-                        break;
-                }
-                repaint();
-            }
-        });
+        timer = new Timer(20, this);
+        timer.start();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (objectImage != null) {
-            g.drawImage(objectImage, objX, objY, null);
+        if (image != null) {
+            g.drawImage(image, x, y, objectSize, objectSize, null);
         }
     }
 
+    @Override
+    public void keyPressed(KeyEvent e) {
+        keysPressed.add(e.getKeyCode());
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        keysPressed.remove(e.getKeyCode());
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        int panelWidth = getWidth();
+        int panelHeight = getHeight();
+
+        if (keysPressed.contains(KeyEvent.VK_LEFT)) {
+            x -= step;
+        }
+        if (keysPressed.contains(KeyEvent.VK_RIGHT)) {
+            x += step;
+        }
+        if (keysPressed.contains(KeyEvent.VK_UP)) {
+            y -= step;
+        }
+        if (keysPressed.contains(KeyEvent.VK_DOWN)) {
+            y += step;
+        }
+
+        // Телепортация
+        if (x < -objectSize) x = panelWidth;
+        if (x > panelWidth) x = -objectSize;
+        if (y < -objectSize) y = panelHeight;
+        if (y > panelHeight) y = -objectSize;
+
+        repaint();
+    }
+
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Move Object with Arrow Keys");
+        JFrame frame = new JFrame("Wraparound Movement");
         Controlled panel = new Controlled();
         frame.add(panel);
         frame.pack();
