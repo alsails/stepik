@@ -14,6 +14,9 @@ class Click extends JPanel {
         setPreferredSize(new Dimension(800, 600));
         setBackground(Color.WHITE);
 
+        Cursor customCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+        setCursor(customCursor);
+
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
