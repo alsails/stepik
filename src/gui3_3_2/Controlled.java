@@ -18,6 +18,7 @@ public class Controlled extends JPanel implements KeyListener, ActionListener {
 
     private final Set<Integer> keysPressed = new HashSet<>();
     private final Timer timer;
+    private boolean shiftPressed = false;
 
     public Controlled() {
         setPreferredSize(new Dimension(800, 600));
@@ -46,11 +47,17 @@ public class Controlled extends JPanel implements KeyListener, ActionListener {
     @Override
     public void keyPressed(KeyEvent e) {
         keysPressed.add(e.getKeyCode());
+        if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+            shiftPressed = true;
+        }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
         keysPressed.remove(e.getKeyCode());
+        if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+            shiftPressed = false;
+        }
     }
 
     @Override
@@ -59,20 +66,21 @@ public class Controlled extends JPanel implements KeyListener, ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        int speed = shiftPressed ? step * 2 : step;
         int panelWidth = getWidth();
         int panelHeight = getHeight();
 
         if (keysPressed.contains(KeyEvent.VK_LEFT)) {
-            x -= step;
+            x -= speed;
         }
         if (keysPressed.contains(KeyEvent.VK_RIGHT)) {
-            x += step;
+            x += speed;
         }
         if (keysPressed.contains(KeyEvent.VK_UP)) {
-            y -= step;
+            y -= speed;
         }
         if (keysPressed.contains(KeyEvent.VK_DOWN)) {
-            y += step;
+            y += speed;
         }
 
         // Телепортация
@@ -85,7 +93,7 @@ public class Controlled extends JPanel implements KeyListener, ActionListener {
     }
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Wraparound Movement");
+        JFrame frame = new JFrame("Controlled");
         Controlled panel = new Controlled();
         frame.add(panel);
         frame.pack();
