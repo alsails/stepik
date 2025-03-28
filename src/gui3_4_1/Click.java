@@ -8,7 +8,9 @@ import java.util.List;
 
 class Click extends JPanel {
     private final List<Point> clickPoints = new ArrayList<>();
-    private final int radius = 10; // радиус кружка
+    private final int radius = 10;
+    private Point draggedPoint = null;
+    private Point dragOffset = null;
 
     public Click() {
         setPreferredSize(new Dimension(800, 600));
@@ -26,20 +28,46 @@ class Click extends JPanel {
                     clickPoints.add(clicked);
                     repaint();
                 } else if (SwingUtilities.isMiddleMouseButton(e)) {
-                    Point toRemove = null;
-                    for (Point p : clickPoints) {
-                        if (clicked.distance(p) <= radius) {
-                            toRemove = p;
-                            break;
-                        }
-                    }
+                    Point toRemove = findPointNear(clicked);
                     if (toRemove != null) {
                         clickPoints.remove(toRemove);
                         repaint();
                     }
+                } else if (SwingUtilities.isRightMouseButton(e)) {
+                    draggedPoint = findPointNear(clicked);
+                    if (draggedPoint != null) {
+                        dragOffset = new Point(clicked.x - draggedPoint.x, clicked.y - draggedPoint.y);
+                    }
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    draggedPoint = null;
+                    dragOffset = null;
                 }
             }
         });
+
+        addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (draggedPoint != null && SwingUtilities.isRightMouseButton(e)) {
+                    draggedPoint.setLocation(e.getX() - dragOffset.x, e.getY() - dragOffset.y);
+                    repaint();
+                }
+            }
+        });
+    }
+
+    private Point findPointNear(Point target) {
+        for (Point p : clickPoints) {
+            if (target.distance(p) <= radius) {
+                return p;
+            }
+        }
+        return null;
     }
 
     @Override
