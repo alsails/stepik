@@ -3,10 +3,12 @@ package gui3_4_1;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Click extends JPanel {
-    private int clickX = -1;
-    private int clickY = -1;
+class Click extends JPanel {
+    private final List<Point> clickPoints = new ArrayList<>();
+    private final int radius = 10; // радиус кружка
 
     public Click() {
         setPreferredSize(new Dimension(800, 600));
@@ -15,10 +17,23 @@ public class Click extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                Point clicked = e.getPoint();
+
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    clickX = e.getX();
-                    clickY = e.getY();
+                    clickPoints.add(clicked);
                     repaint();
+                } else if (SwingUtilities.isMiddleMouseButton(e)) {
+                    Point toRemove = null;
+                    for (Point p : clickPoints) {
+                        if (clicked.distance(p) <= radius) {
+                            toRemove = p;
+                            break;
+                        }
+                    }
+                    if (toRemove != null) {
+                        clickPoints.remove(toRemove);
+                        repaint();
+                    }
                 }
             }
         });
@@ -28,10 +43,12 @@ public class Click extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if (clickX >= 0 && clickY >= 0) {
+        g.setColor(Color.GREEN);
+        for (Point p : clickPoints) {
+            g.fillOval(p.x - radius, p.y - radius, radius * 2, radius * 2);
             g.setColor(Color.BLACK);
-            g.setFont(new Font("Arial", Font.PLAIN, 14));
-            g.drawString("(" + clickX + ", " + clickY + ")", clickX + 10, clickY - 10);
+            g.drawString("(" + p.x + ", " + p.y + ")", p.x + radius + 4, p.y);
+            g.setColor(Color.GREEN);
         }
     }
 
@@ -44,4 +61,3 @@ public class Click extends JPanel {
         frame.setVisible(true);
     }
 }
-
