@@ -83,7 +83,7 @@ class Quiz {
         if (selectedIndex == correctAnswers[currentQuestion]) {
             score++;
         }
-        
+
         SwingUtilities.getRootPane(answerButtons[selectedIndex]).requestFocusInWindow();
 
         currentQuestion++;
