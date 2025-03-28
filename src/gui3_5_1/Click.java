@@ -22,4 +22,3 @@ class Click {
         frame.setVisible(true);
     }
 }
-
